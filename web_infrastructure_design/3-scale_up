@@ -1,0 +1,84 @@
+Scale Up Web Infrastructure Design - www.foobar.com
+
+Overview:
+This design scales up the previous infrastructure by splitting each major component (web server, application server, database) onto its own dedicated server. Two HAProxy load balancers are configured in a cluster to provide high availability.
+
+Infrastructure Components:
+
+1. **2 Load Balancers (HAProxy)**
+   - One active, one passive (HA setup).
+   - Cluster configuration with failover capability.
+   - Distributes traffic to the web servers using Round Robin algorithm.
+
+2. **1 Web Server**
+   - Handles HTTP/HTTPS requests from the load balancer.
+   - Serves static content (HTML, CSS, JS).
+   - Forwards dynamic requests to the Application Server.
+
+3. **1 Application Server**
+   - Hosts the business logic and processes dynamic requests (e.g., PHP, Python, Node.js).
+   - Communicates with the database to process or retrieve data.
+   - Returns responses to the Web Server.
+
+4. **1 Database Server (MySQL)**
+   - Stores persistent data.
+   - Only one primary database server (write/read).
+   - Optionally supports replication to future replicas for scalability.
+
+---
+
+⚙️ Why each element is added:
+
+- **Separate Web Server**:
+  - Offloads static content processing from the app server.
+  - Increases scalability and clarity in infrastructure.
+  
+- **Separate App Server**:
+  - Ensures app logic is handled independently.
+  - Makes it easier to scale only the app tier when needed.
+
+- **Separate DB Server**:
+  - Reduces load from application/web servers.
+  - Simplifies database maintenance and backups.
+
+- **Load Balancer Cluster**:
+  - High availability setup.
+  - Prevents Single Point of Failure (SPOF) if one load balancer fails.
+
+---
+
+📘 Application Server vs Web Server:
+
+| Feature | Web Server | Application Server |
+|--------|------------|--------------------|
+| Role | Serves static content | Runs application logic |
+| Examples | Nginx, Apache | Gunicorn, uWSGI, Node.js |
+| Content | HTML, CSS, JS | PHP, Python, Ruby code |
+| Sends requests to | App server | Database |
+| Typical Ports | 80 (HTTP), 443 (HTTPS) | 8000, 5000, etc. |
+
+---
+
+💡 Load Balancer Cluster (Active-Passive):
+
+- **HAProxy #1**: Active
+- **HAProxy #2**: Passive (standby)
+- Uses Keepalived or similar tool for virtual IP failover
+- If Active fails, Passive takes over with minimal downtime
+
+---
+
+⚠️ Potential issues (SPOFs reduced):
+
+- Still only one DB (write) — needs replication for full HA
+- App server can be a bottleneck under high load — consider adding more
+- Monitoring not included — should be added for observability
+- SSL termination should be secured or re-encrypted internally
+
+---
+
+🌐 DNS Setup:
+- Domain: www.foobar.com
+- DNS A record points to virtual IP managed by HAProxy cluster
+
+
