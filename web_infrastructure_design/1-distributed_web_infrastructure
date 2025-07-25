@@ -1,0 +1,70 @@
+Distributed Web Infrastructure - Three Server Architecture
+
+Overview:
+A user accesses www.foobar.com. A DNS lookup resolves the domain to the load balancer IP. The load balancer distributes traffic across two backend servers, each of which runs a full stack including Nginx, an application server, and a MySQL database.
+
+Infrastructure Components:
+
+1. **Load Balancer (HAProxy)**
+   - Receives all incoming requests.
+   - Distributes traffic using a Round Robin algorithm.
+   - Ensures load distribution and high availability.
+
+2. **2 Backend Servers (App Servers)**
+   Each contains:
+   - Web Server (Nginx)
+   - Application Server (e.g., Node.js, Python, PHP)
+   - Application Files (code base)
+   - MySQL Database
+
+DNS Configuration:
+- www.foobar.com has an A record pointing to the load balancer’s IP.
+
+---
+
+🔄 Load Balancing Strategy:
+
+- **Algorithm**: Round Robin
+- **How it works**: Incoming requests are distributed evenly and cyclically between the two backend servers. This helps to balance load and prevent one server from becoming a bottleneck.
+
+- **Active-Active Setup**:
+  - Both backend servers are active and handle traffic simultaneously.
+  - If one fails, the load balancer continues to send traffic to the other.
+  - Difference from Active-Passive:
+    - In Active-Passive, one server is on standby and only takes over if the active one fails.
+
+---
+
+🛢️ Database Cluster (Primary-Replica):
+
+- Both backend servers run MySQL, configured in a Primary-Replica (Master-Slave) setup.
+  - One database acts as the **Primary** – handles all write operations (INSERT, UPDATE, DELETE).
+  - The second is a **Replica** – handles read-only operations and gets synchronized from the primary.
+  - Replication can be synchronous or asynchronous.
+
+- **Application Difference**:
+  - Application connects to the **Primary** DB for writing.
+  - For read operations, it may use the **Replica** (if read-splitting is configured).
+
+---
+
+⚠️ Issues with this infrastructure:
+
+1. **SPOF (Single Point of Failure)**:
+   - The Load Balancer is still a SPOF. If it fails, no traffic is routed.
+
+2. **Security Concerns**:
+   - No firewall rules to restrict traffic.
+   - No HTTPS means data is transmitted in plain text.
+
+3. **No Monitoring**:
+   - There is no way to detect server failures, performance degradation, or traffic spikes.
+
+---
+
+🧠 Why this setup is better:
+- Increases availability
+- Enables horizontal scaling
+- Better performance under high traffic
+- Reduces the load on individual servers
+
