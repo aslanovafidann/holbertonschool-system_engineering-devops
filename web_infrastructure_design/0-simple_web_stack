@@ -1,0 +1,56 @@
+Simple Web Stack - One Server Architecture
+
+Overview:
+A user wants to access www.foobar.com. Their browser performs a DNS lookup to resolve the domain name to the server's IP address (8.8.8.8). The request is sent to a single server, which hosts:
+- A web server (Nginx)
+- An application server
+- Application code
+- A MySQL database
+
+Domain Configuration:
+- Domain name: foobar.com
+- Subdomain: www.foobar.com
+- DNS record: 'www' is a subdomain and uses an A record pointing to IP 8.8.8.8
+
+Server Stack Components:
+1. **Web Server (Nginx)**:
+   - Handles HTTP(S) requests
+   - Serves static files (HTML, CSS, JS)
+   - Acts as a reverse proxy to forward dynamic requests to the application server
+
+2. **Application Server**:
+   - Runs the website’s backend code (e.g., PHP, Python, Node.js)
+   - Handles business logic and dynamic content generation
+
+3. **Database Server (MySQL)**:
+   - Stores persistent data like users, posts, etc.
+   - Communicates with the application server using SQL queries
+
+4. **Application Files**:
+   - Code base (source code) for handling requests, logic, and database interaction
+
+Communication:
+- The user’s browser communicates with the server over HTTP or HTTPS (TCP/IP).
+- Internal communication between Nginx, app server, and database happens over the local network (localhost or internal IPs).
+
+DNS:
+- The domain 'foobar.com' is configured with a subdomain 'www'
+- The DNS record type for www.foobar.com is an **A record** (IPv4 address)
+- Resolves www.foobar.com → 8.8.8.8
+
+---
+
+Potential Issues with This Infrastructure:
+
+1. **SPOF (Single Point of Failure)**:
+   - If the one server goes down, the entire website becomes unreachable.
+
+2. **Maintenance Downtime**:
+   - Restarting the web or app server for updates or deployments will temporarily make the site unavailable.
+
+3. **Lack of Scalability**:
+   - The server cannot handle large amounts of traffic
+   - There's no load balancing or replication for high availability
+
+This design is suitable for small websites or testing environments, but not ideal for production systems that require high uptime or scalability.
+
