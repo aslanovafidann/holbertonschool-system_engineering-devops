@@ -1,0 +1,81 @@
+Secured and Monitored Web Infrastructure - Three Server Design
+
+Overview:
+The user accesses www.foobar.com over HTTPS. A DNS record points to the load balancer IP. The load balancer handles SSL termination and distributes traffic to two backend servers. Firewalls and monitoring are implemented to secure and observe the system.
+
+Infrastructure Components:
+
+1. **Load Balancer (HAProxy)**
+   - Handles SSL termination (HTTPS via SSL certificate).
+   - Distributes traffic to backend servers.
+   - Uses Round Robin algorithm.
+
+2. **2 Backend Servers (App Servers)**
+   Each includes:
+   - Web Server (Nginx)
+   - Application Server
+   - App Files
+   - MySQL (1 Primary DB, 1 Replica DB)
+   - Monitoring Agent (e.g., SumoLogic collector)
+
+3. **Firewalls (3 units)**
+   - One in front of Load Balancer
+   - One in front of each backend server
+   - Purpose: restrict incoming/outgoing traffic to necessary ports (e.g., 80/443/3306)
+
+4. **SSL Certificate**
+   - Installed on the Load Balancer.
+   - Enables HTTPS access to www.foobar.com.
+   - Encrypts traffic to protect data from being intercepted.
+
+5. **Monitoring Clients**
+   - Installed on each server.
+   - Collect metrics (CPU, memory, disk usage, QPS, etc.)
+   - Send logs and performance data to a monitoring platform (e.g., SumoLogic, Datadog).
+
+---
+
+🔐 Why each new component is added:
+
+- **Firewalls**: Prevent unauthorized access by controlling traffic flow.
+- **SSL Certificate**: Ensures encrypted traffic (HTTPS), protects user data, builds trust.
+- **Monitoring Agents**: Allow real-time visibility into server health, detect issues early.
+
+---
+
+📡 Monitoring and Observability:
+
+- **Purpose**: Monitor uptime, server health, request rate (QPS), detect anomalies.
+- **How data is collected**:
+  - Log collectors installed on each server.
+  - These collect system metrics and send them to a central monitoring dashboard (e.g., SumoLogic).
+- **To monitor QPS (Queries per Second)**:
+  - Enable access logging in Nginx.
+  - Use monitoring client to parse logs and calculate request rate per second.
+
+---
+
+⚠️ Issues with this infrastructure:
+
+1. **SSL Termination at Load Balancer**:
+   - Decrypts traffic at the load balancer.
+   - Internal traffic to backend servers is unencrypted unless re-encrypted.
+   - Risk: If internal network is compromised, data can be read in plaintext.
+
+2. **Single MySQL Primary (write-only)**:
+   - If the primary DB fails, no writes can happen.
+   - No automatic failover unless configured manually.
+
+3. **Servers with all components**:
+   - No separation of concerns.
+   - Increases attack surface.
+   - Harder to scale individual components independently.
+   - If one service (e.g., MySQL) consumes high CPU, it may affect app/web server performance.
+
+---
+
+✅ DNS Setup:
+- Domain: www.foobar.com
+- DNS Record: A record pointing to Load Balancer IP
+
+
